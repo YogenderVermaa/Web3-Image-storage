@@ -20,6 +20,11 @@ console.log(signature)
 const dataSignature = {
    signature
 }
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+const url = `${baseUrl}/api/auth?address=${selectAccount}`
+const res  = await axios.post(url,dataSignature)
+console.log(res.data)
+
 
 
 const contractAddress= "0xf4A304c64D615b9470C291bd797A7B7852E6df6b";
