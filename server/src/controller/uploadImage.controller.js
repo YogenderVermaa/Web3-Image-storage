@@ -22,13 +22,10 @@ const uploadImageController = asyncHandler(async(req,res,next) => {
 
 
     const {encryptData,iv} = encryptFile(req.file.buffer,user.encryptionKey)
-    console.log("encryptionData:",encryptData,"iv:",iv)
-
-
      const pinata = new pinataSDK(process.env.PINATA_API_KEY,process.env.PINATA_SECRET_KEY)
      const resPinata = await pinata.pinJSONToIPFS({encryptData,iv})
      
-     res.status(200).json(new ApiResponse(200,{IpfsHash:resPinata.IpfsHash},"uploadSuccess"))
+     res.status(200).json(new ApiResponse(200,{ipfsHash:resPinata.IpfsHash},"uploadSuccess"))
    } catch (error) {
      console.log(error)
      throw new ApiError(500,"Something Went Wrong While Uploading The File")

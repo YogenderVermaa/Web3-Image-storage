@@ -13,7 +13,7 @@ function UploadImage() {
       console.log("Contract not connected");
     return;
     }
-    console.log("Uploading to contract...");
+    console.log("Uploading to contract...",contractInstance);
     const tx = await contractInstance.uploadFile(selectAccount,ipfsHash)
     console.log("Transection:",tx)
     await toast.promise(tx.wait(),{
@@ -32,8 +32,9 @@ try {
         success: "Image uploaded",
         error: "Image Upload Failed"
       })
-      await uploadImageHash(res.data?.ipfsHash)
-      console.log(res.data?.IpfsHash)
+      await uploadImageHash(res.data?.data?.ipfsHash)
+      console.log(res.data)
+      console.log(res.data?.data?.ipfsHash)
 } catch (error) {
   console.error(error)
   toast.error("Image Upload Failed at catch block")
