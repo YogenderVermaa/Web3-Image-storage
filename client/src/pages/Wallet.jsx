@@ -5,17 +5,19 @@ import { useEffect } from "react";
 const Wallet = () => {
   const navigateTo = useNavigate()
   const {updateWeb3State,web3State} = useWeb3Context()
+
   const {selectAccount} = web3State
 
   
    useEffect(() => {
-   if(selectAccount){
+   if(web3State.selectAccount){
      navigateTo("/home")
    }
  },[selectAccount,navigateTo])
 
   const handleWalletConnection = async() => {
     const {contractInstance,selectAccount} = await connectWallet()
+
     updateWeb3State({contractInstance,selectAccount})
   } 
   return (

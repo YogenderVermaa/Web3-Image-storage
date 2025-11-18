@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import {errorHandler} from "./middleware/errors.middlewares.js";
-import { authController } from "./controller/auth.controller.js";
-
+import authRouter from "./routes/auth.route.js"
+import uploadImageRouter from "./routes/uploadImage.route.js"
 
 
 const app = express()
@@ -22,7 +22,8 @@ app.use(express.urlencoded({
     credentials:true
 }))
 
-app.use("/api",authController)
+app.use("/api",authRouter)
+app.use("/api",uploadImageRouter)
 
 app.use(errorHandler)
 

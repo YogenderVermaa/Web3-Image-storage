@@ -22,7 +22,7 @@ const authController = asyncHandler(async(req,res) => {
         res.status(400).json(new ApiResponse("Authentication Failed"))
     }
     
-    const Address = recoverAddress.toLocaleLowerCase()
+    const Address = recoverAddress.toLowerCase()
     
     const user = await User.findOne({userAddress:Address})
 
