@@ -7,7 +7,7 @@ import { ApiError } from "../utils/api-errors.js";
 import { encryptFile } from "../utils/encryption.js";
 
 const uploadImageController = asyncHandler(async(req,res,next) => {
-  const userAddress = "0xc221bab03b56650631755a99e74bf4661930a229"
+  const userAddress = req.headers["selected-address"]
    try {
     const user = await User.findOne({userAddress})
     if(!user){
@@ -25,7 +25,7 @@ const uploadImageController = asyncHandler(async(req,res,next) => {
      const pinata = new pinataSDK(process.env.PINATA_API_KEY,process.env.PINATA_SECRET_KEY)
      const resPinata = await pinata.pinJSONToIPFS({encryptData,iv})
      
-     res.status(200).json(new ApiResponse(200,{ipfsHash:resPinata.IpfsHash},"uploadSuccess"))
+     res.status(200).json(new ApiResponse(200,{ipfsHash:resPinata.IpfsHash,iv},"uploadSuccess"))
    } catch (error) {
      console.log(error)
      throw new ApiError(500,"Something Went Wrong While Uploading The File")

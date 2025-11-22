@@ -26,8 +26,14 @@ function UploadImage() {
 try {
       const formData = new FormData()
       formData.append('file',file)
+      // formData.append("selectedAccount",selectAccount)
+      console.log("this is the file:::::: ",file)
       const url=import.meta.env.VITE_BACKEND_URL;
-      const res = await toast.promise(axios.post(`${url}/api/upload-image`,formData) ,{
+      const res = await toast.promise(axios.post(`${url}/api/upload-image`,formData,{
+        headers: {
+          "selected-address":selectAccount
+        }
+      }) ,{
         loading: "Image uploading",
         success: "Image uploaded",
         error: "Image Upload Failed"

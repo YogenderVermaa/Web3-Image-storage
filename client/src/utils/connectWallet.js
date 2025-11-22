@@ -5,6 +5,7 @@ import axios from "axios";
 export const connectWallet = async () => {
    try {
       if(!window.ethereum){
+         toast.error("Install Metamask")
  throw new Error("Metamask is not installed")
 } 
 const accounts = await window.ethereum.request({
