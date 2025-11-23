@@ -1,4 +1,4 @@
-import express from "express";
+import express, { urlencoded } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import {errorHandler} from "./middleware/errors.middlewares.js";
@@ -7,12 +7,14 @@ import uploadImageRouter from "./routes/uploadImage.route.js"
 
 
 const app = express()
-console.log("cors:",process.env.CORS_ORIGIN)
+app.use(express.urlencoded({
+    extended:true
+}))
 app.use(cors({
     origin:process.env.CORS_ORIGIN,
     credentials:true,
     methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-    allowedHeaders:["Content-Type","Authorization","selected-address"],
+    allowedHeaders:["Content-Type","Authorization","access-token"],
 }))
 console.log("cross-origin",process.env.CORS_ORIGIN)
 app.use(cookieParser())

@@ -16,7 +16,7 @@ const provider = new ethers.BrowserProvider(window.ethereum)
 const signer  = await provider.getSigner();
 const message = "Welcome to crypto wallet";
 const signature = await signer.signMessage(message)
-console.log(signature)
+// console.log(signature)
 
 const dataSignature = {
    signature
@@ -24,7 +24,10 @@ const dataSignature = {
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const url = `${baseUrl}/api/auth?address=${selectAccount}`
 const res  = await axios.post(url,dataSignature)
-console.log(res.data)
+const token = res.data.data
+console.log("TOKEN::::::::::",token)
+
+localStorage.setItem("token",token)
 
 
 

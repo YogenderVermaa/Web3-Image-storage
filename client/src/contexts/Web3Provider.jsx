@@ -12,6 +12,10 @@ const Web3Provider = ({children}) => {
         ...prevState,
         ...newState
       }))
+      
+
+
+
     }
   return (
     <web3Context.Provider value={{web3State,updateWeb3State}}>

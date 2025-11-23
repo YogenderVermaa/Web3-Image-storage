@@ -7,7 +7,7 @@ const Home = () => {
   const {selectAccount} = web3State;
   // console.log(selectAccount)
   return (
-    <div>
+    <div className='w-full h-screen flex justify-center items-center bg-gradient-to-r from-blue-600 to-white/30'>
       <UploadImage/>
     </div>
   )

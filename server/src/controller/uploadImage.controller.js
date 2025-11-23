@@ -7,7 +7,8 @@ import { ApiError } from "../utils/api-errors.js";
 import { encryptFile } from "../utils/encryption.js";
 
 const uploadImageController = asyncHandler(async(req,res,next) => {
-  const userAddress = req.headers["selected-address"]
+  const userAddress = req.address
+  console.log("userAddress::::::",userAddress)
    try {
     const user = await User.findOne({userAddress})
     if(!user){
