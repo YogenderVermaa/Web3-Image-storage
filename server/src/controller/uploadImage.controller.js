@@ -6,9 +6,8 @@ import {generateEncryptionKey} from "../utils/generateKey.js"
 import { ApiError } from "../utils/api-errors.js";
 import { encryptFile } from "../utils/encryption.js";
 
-const uploadImageController = asyncHandler(async(req,res,next) => {
+const uploadImageController = asyncHandler(async(req,res) => {
   const userAddress = req.address
-  console.log("userAddress::::::",userAddress)
    try {
     const user = await User.findOne({userAddress})
     if(!user){

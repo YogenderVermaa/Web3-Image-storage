@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import {errorHandler} from "./middleware/errors.middlewares.js";
 import authRouter from "./routes/auth.route.js"
 import uploadImageRouter from "./routes/uploadImage.route.js"
+import getImageRouter from "./routes/getImage.route.js"
 
 
 const app = express()
@@ -26,6 +27,8 @@ app.use(express.urlencoded({
 
 app.use("/api",authRouter)
 app.use("/api",uploadImageRouter)
+app.use("/api",getImageRouter)
+
 
 app.use(errorHandler)
 
