@@ -1,7 +1,6 @@
 import { useWeb3Context } from "../contexts/useWeb3Context";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 function Header() {
-    const navigate = useNavigate()
     const {web3State} = useWeb3Context()
     const {selectAccount} = web3State
 

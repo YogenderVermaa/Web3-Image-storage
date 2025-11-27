@@ -2,13 +2,14 @@ import { useState } from "react";
 import axios from "axios"
 import { useWeb3Context } from "../contexts/useWeb3Context";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 function UploadImage() {
   const [file,setFile] = useState(null)
   const {web3State} = useWeb3Context();
   const {selectAccount,contractInstance} = web3State
   const [loading,setLoading] = useState(false)
-  const navigate = Navigate()
+  const navigate = useNavigate()
 
   const uploadImageHash = async (ipfsHash) => {
     if(!contractInstance){
@@ -23,6 +24,7 @@ function UploadImage() {
       success:"Transection is successfull",
       error:"Transection failed"
     })
+    navigate("/home",{replace:true})
     
   }
   const handleImageUpload =async () => {
