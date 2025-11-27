@@ -1,5 +1,4 @@
-import React from 'react'
-import UploadImage from '../components/uploadImage'
+import UploadImage from '../components/UploadImage.jsx'
 
 function Upload() {
   return (
