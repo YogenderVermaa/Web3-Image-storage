@@ -1,4 +1,4 @@
-import { web3Context } from "./createWeb3Context";
+import { web3Context } from "./Web3Provider";
 import { useContext } from "react";
 
 export const useWeb3Context = () => {

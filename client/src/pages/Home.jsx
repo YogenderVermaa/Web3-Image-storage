@@ -1,17 +1,26 @@
-import React from 'react'
-import { useWeb3Context } from '../contexts/useWeb3Context'
-import UploadImage from '../components/uploadImage.jsx';
-import GetImage  from '../components/GetImage.jsx';
-const Home = () => {
-  const {web3State} = useWeb3Context();
-  const {selectAccount} = web3State;
-  // console.log(selectAccount)
-  return (
-    <div className='w-full h-screen flex justify-center flex-col items-center bg-gradient-to-r from-blue-600 to-white/30'>
-      <UploadImage/>
-      <GetImage/>
-    </div>
-  )
-}
+import React from 'react';
+import { useWeb3Context } from '../contexts/useWeb3Context';
+import Header from '../components/Header.jsx';
+import GetImage from '../components/GetImage.jsx';
 
-export default Home
+const Home = () => {
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-600 to-white/40 flex flex-col">
+      
+      {/* Header */}
+      <div className="w-full shadow-md bg-white/20 backdrop-blur-md sticky top-0 z-50">
+        <Header />
+      </div>
+
+      {/* Content Section */}
+      <div className="flex justify-center px-6 py-10">
+        <div className="w-full max-w-6xl">
+          <GetImage />
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+export default Home;

@@ -8,6 +8,7 @@ function UploadImage() {
   const {web3State} = useWeb3Context();
   const {selectAccount,contractInstance} = web3State
   const [loading,setLoading] = useState(false)
+  const navigate = Navigate()
 
   const uploadImageHash = async (ipfsHash) => {
     if(!contractInstance){
@@ -22,9 +23,11 @@ function UploadImage() {
       success:"Transection is successfull",
       error:"Transection failed"
     })
+    
   }
   const handleImageUpload =async () => {
 try {
+  
       setLoading(true)
       const formData = new FormData()
       formData.append('file',file)

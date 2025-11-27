@@ -5,7 +5,7 @@ import {getImage} from "../controller/getImage.controller.js"
 const router = Router()
 
 
-router.route("/getImage").get(verifyJWT,getImage)
+router.route("/getImage").post(verifyJWT,getImage)
 
 
 export default router
