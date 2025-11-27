@@ -4,9 +4,21 @@ import Home from "../pages/Home";
 import ProtectedRoute from "./protectedRoute";
 import Upload from "../pages/Upload";
 import Layout from "../Layout";
+import LayoutWithoutHeader from "../LayoutN";
 
 
 export const routes = createBrowserRouter([
+
+
+    {
+        path:"/",
+        element:<LayoutWithoutHeader/>,
+        children:[
+            {
+                path:"/",element:<Wallet/>
+            }
+        ]
+    },
     {
         path:'/',
         element:<Layout/>,

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useWeb3Context } from '../contexts/useWeb3Context';
-import Header from '../components/Header.jsx';
 import GetImage from '../components/GetImage.jsx';
 
 const Home = () => {
