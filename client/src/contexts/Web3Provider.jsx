@@ -5,7 +5,7 @@ import contractAbi from "../constants/contractAbi.json";
 export const web3Context = createContext();
 
 const Web3Provider = ({ children }) => {
-  const [initializing,setInitializing] = useState(true)
+  const [initializing, setInitializing] = useState(true);
   const [web3State, setWeb3State] = useState({
     contractInstance: null,
     selectAccount: null,
@@ -21,11 +21,15 @@ const Web3Provider = ({ children }) => {
       const token = localStorage.getItem("token");
 
       if (!savedAddress || !token) {
-        setInitializing(false)
+        setInitializing(false);
         return;
       }
 
       try {
+        if (!window.ethereum) {
+          throw new Error("MetaMask not found");
+        }
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contractInstance = new ethers.Contract(
@@ -42,9 +46,12 @@ const Web3Provider = ({ children }) => {
         });
       } catch (err) {
         console.log("Restore failed:", err);
+        // Clear invalid data
+        localStorage.removeItem("selectedAccount");
+        localStorage.removeItem("token");
       }
 
-      setInitializing(false)
+      setInitializing(false);
     };
 
     restoreWeb3();
@@ -55,7 +62,7 @@ const Web3Provider = ({ children }) => {
   };
 
   return (
-    <web3Context.Provider value={{ web3State, updateWeb3State,initializing }}>
+    <web3Context.Provider value={{ web3State, setWeb3State, updateWeb3State, initializing }}>
       {children}
     </web3Context.Provider>
   );

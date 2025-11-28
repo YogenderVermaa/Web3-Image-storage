@@ -9,10 +9,9 @@ import LayoutWithoutHeader from "../LayoutN";
 export const routes = createBrowserRouter([
   // Public routes (no header)
   {
-    path:"/",
     element: <LayoutWithoutHeader />,
     children: [
-      { index: true, element: <Wallet /> }, // Login page
+      { path: "/", element: <Wallet /> }, // Login page
     ],
   },
 
