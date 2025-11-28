@@ -1,7 +1,6 @@
 import { useWeb3Context } from "../contexts/useWeb3Context";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const { web3State,setWeb3State } = useWeb3Context();
