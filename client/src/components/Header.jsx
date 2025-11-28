@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export default function Header() {
-  const { web3State } = useWeb3Context();
+  const { web3State,setWeb3State } = useWeb3Context();
   const { selectAccount } = web3State;
   const navigate = useNavigate();
 
@@ -17,6 +17,9 @@ export default function Header() {
     const confirmed = window.confirm("Are you sure you want to logout?");
     if (confirmed) {
       localStorage.clear();
+      setWeb3State({
+      selectAccount: null
+    });
       navigate("/",{ replace: true });
     }
   };
