@@ -7,7 +7,7 @@ export default function ProtectedRoute({children}){
     if(initializing) return 
 
 
-    if(!web3State.selectAccount) return <Navigate to="/" replace/>
+    if(!selectAccount) return <Navigate to="/" replace/>
 
 
 
