@@ -17,9 +17,10 @@ export default function Header() {
     const confirmed = window.confirm("Are you sure you want to logout?");
     if (confirmed) {
       localStorage.clear();
-      setWeb3State({
+      setWeb3State((prev)=>({
+        ...prev,
       selectAccount: null
-    });
+    }));
       navigate("/",{ replace: true });
     }
   };
