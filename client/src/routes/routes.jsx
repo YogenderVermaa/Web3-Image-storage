@@ -1,10 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
-import Wallet from "../pages/Wallet";
-import Home from "../pages/Home";
-import ProtectedRoute from "./protectedRoute";
-import Upload from "../pages/Upload";
-import Layout from "../Layout";
-import LayoutWithoutHeader from "../LayoutN";
+import Wallet from "../pages/Wallet.jsx";
+import Home from "../pages/Home.jsx";
+import ProtectedRoute from "./protectedRoute.jsx";
+import Upload from "../pages/Upload.jsx";
+import Layout from "../Layout.jsx";
+import LayoutWithoutHeader from "../LayoutN.jsx";
+import HowWeWork from "../pages/Work.jsx";
 
 export const routes = createBrowserRouter([
   // Public routes (no header)
@@ -19,8 +20,9 @@ export const routes = createBrowserRouter([
   {
     element: <Layout />,
     children: [
-      { path: "/home", element: <ProtectedRoute><Home /></ProtectedRoute> },
+      { path: "/home", element: <ProtectedRoute><HowWeWork/></ProtectedRoute> },
       { path: "/upload-image", element: <ProtectedRoute><Upload /></ProtectedRoute> },
+      {path:"/work" , element:<ProtectedRoute><Home/></ProtectedRoute>}
     ],
   },
 
