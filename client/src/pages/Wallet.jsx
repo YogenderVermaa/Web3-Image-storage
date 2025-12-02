@@ -99,12 +99,10 @@ const Wallet = () => {
           {/* Glow effect backdrop */}
           <div className="absolute -inset-2 bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-all duration-300 animate-pulse"></div>
 
-          {/* Main icon container */}
           <div className="relative w-24 h-24 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl transform group-hover:scale-105 transition-transform duration-300">
-            {/* Inner glow */}
             <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20 rounded-2xl"></div>
 
-            {/* Vault/Lock icon */}
+            
             <svg
               className="w-12 h-12 text-white relative z-10 drop-shadow-lg"
               fill="none"
@@ -119,7 +117,6 @@ const Wallet = () => {
               />
             </svg>
 
-            {/* Decorative shine effect */}
             <div className="absolute top-2 right-2 w-5 h-5 bg-white/40 rounded-full blur-sm"></div>
           </div>
         </div>
