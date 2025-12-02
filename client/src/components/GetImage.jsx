@@ -2,14 +2,15 @@ import axios from "axios";
 import { useWeb3Context } from "../contexts/useWeb3Context";
 import { useEffect, useState } from "react";
 import { Mosaic } from "react-loading-indicators";
+import { useImageStore } from "../store/imageStore";
 
 const GetImage = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const imagePerPage = 2;
-  const [images, setImages] = useState([]);
-  const [totalHashes, setTotalHashes] = useState(0);
+  const imagePerPage = 3;
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+
+  const { cachedPages, setCache, totalHashes, setTotalHashes } = useImageStore()
 
   const { web3State } = useWeb3Context();
   const { selectAccount, contractInstance } = web3State;
@@ -23,12 +24,16 @@ const GetImage = () => {
   useEffect(() => {
     const getImage = async () => {
       try {
+        if (cachedPages[currentPage]) {
+          console.log("loading from cache....");
+          return;
+        }
         setLoading(true);
         const ipfsHashArray = await getImageHashes();
         setTotalHashes(ipfsHashArray.length);
 
         if (ipfsHashArray.length === 0) {
-          setImages([]);
+          setCache(currentPage, []);
           return;
         }
 
@@ -45,10 +50,10 @@ const GetImage = () => {
           }
         );
 
-        setImages(res.data.data || []);
+        setCache(currentPage, res.data.data || []);
       } catch (err) {
         console.log("Error loading images", err);
-        setImages([]);
+        setCache(currentPage, []);
       } finally {
         setLoading(false);
       }
@@ -63,6 +68,16 @@ const GetImage = () => {
   };
 
   const isLastPage = currentPage * imagePerPage >= totalHashes;
+  const images = cachedPages[currentPage] || []
+
+  const downloadImage = () => {
+    const link = document.createElement("a");
+    link.href = previewImage;
+    link.download = "image.png";
+    link.click();
+  };
+
+
 
   return loading ? (
     <div className="relative w-full min-h-screen bg-slate-950 flex justify-center items-center">
@@ -71,7 +86,6 @@ const GetImage = () => {
   ) : (
     <div className="w-full min-h-screen bg-slate-950 flex flex-col justify-center items-center py-16">
 
-      {/* IMAGE GRID */}
       {images.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-7xl px-6">
           {images.map((imgData, index) => (
@@ -80,7 +94,6 @@ const GetImage = () => {
               onClick={() => setPreviewImage(`data:image/*;base64,${imgData}`)}
               className="group cursor-pointer relative rounded-xl overflow-hidden bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-indigo-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/20"
             >
-              {/* Image */}
               <div className="aspect-square overflow-hidden bg-slate-900">
                 <img
                   src={`data:image/*;base64,${imgData}`}
@@ -89,7 +102,6 @@ const GetImage = () => {
                 />
               </div>
 
-              {/* Overlay on Hover */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <div className="w-full flex justify-between items-center">
                   <span className="text-white text-sm font-medium">
@@ -111,20 +123,19 @@ const GetImage = () => {
             </svg>
           </div>
           <p className="text-slate-400 text-lg">No images found</p>
+
         </div>
       )}
 
-      {/* PAGINATION */}
       {images.length > 0 && (
         <div className="flex gap-3 mt-12">
           <button
             onClick={() => pagination(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
-              currentPage === 1
-                ? "bg-slate-800 text-slate-600 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
-            }`}
+            className={`px-6 py-2.5 rounded-lg font-medium transition-all ${currentPage === 1
+              ? "bg-slate-800 text-slate-600 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
+              }`}
           >
             Previous
           </button>
@@ -136,24 +147,22 @@ const GetImage = () => {
           <button
             onClick={() => pagination(currentPage + 1)}
             disabled={isLastPage}
-            className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
-              isLastPage
-                ? "bg-slate-800 text-slate-600 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
-            }`}
+            className={`px-6 py-2.5 rounded-lg font-medium transition-all ${isLastPage
+              ? "bg-slate-800 text-slate-600 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
+              }`}
           >
             Next
           </button>
         </div>
       )}
 
-      {/* PREVIEW MODAL */}
       {previewImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/90 backdrop-blur-md flex justify-center items-center z-[999] animate-fadeIn"
           onClick={() => setPreviewImage(null)}
         >
-          <div 
+          <div
             className="relative max-w-[90%] max-h-[90%]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -163,13 +172,37 @@ const GetImage = () => {
               className="rounded-xl shadow-2xl max-h-[90vh] max-w-[90vw] object-contain border border-slate-800"
             />
 
-            {/* Close Button */}
             <button
               onClick={() => setPreviewImage(null)}
               className="absolute -top-4 -right-4 w-12 h-12 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white rounded-full flex justify-center items-center text-xl font-bold shadow-xl transition-all hover:scale-110"
             >
               ✕
             </button>
+
+            <button
+              onClick={downloadImage}
+              className="absolute -top-4 left-0 w-12 h-12 bg-gradient-to-br from-indigo-600 to-indigo-700 
+              hover:from-indigo-500 hover:to-indigo-600 border border-indigo-400/50 
+              text-white rounded-full flex justify-center items-center 
+              shadow-xl shadow-indigo-500/30 transition-all duration-300 hover:scale-110 
+              hover:shadow-2xl hover:shadow-indigo-500/50 group"
+              title="Download Image"
+            >
+              <svg
+                className="w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+            </button>
+
           </div>
         </div>
       )}

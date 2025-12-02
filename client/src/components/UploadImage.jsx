@@ -3,6 +3,7 @@ import axios from "axios";
 import { useWeb3Context } from "../contexts/useWeb3Context";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useImageStore } from "../store/imageStore.js";
 
 export default function UploadImage() {
   const [file, setFile] = useState(null);
@@ -11,6 +12,8 @@ export default function UploadImage() {
   const { selectAccount, contractInstance } = web3State;
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { clearCache } = useImageStore();
+
 
   const handleFileSelect = (e) => {
     const f = e.target.files[0];
@@ -26,6 +29,8 @@ export default function UploadImage() {
       success: "Upload successful 🎉",
       error: "Transaction failed",
     });
+
+    clearCache()
 
     navigate("/home", { replace: true });
   };
