@@ -34,7 +34,7 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-gray-500">
-              © 2024 ImageVault. Secured by blockchain technology.
+              © 2025 ImageVault. Secured by blockchain technology.
             </p>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>
