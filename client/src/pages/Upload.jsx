@@ -1,4 +1,4 @@
-import UploadImage from '../components/UploadImage.jsx'
+import UploadImage from "../components/UploadImage.jsx"
 
 function Upload() {
   return (
