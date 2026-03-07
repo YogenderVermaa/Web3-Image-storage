@@ -13,7 +13,7 @@ const Web3Provider = ({ children }) => {
     signer: null,
   });
 
-  const CONTRACT_ADDRESS = "0xf4A304c64D615b9470C291bd797A7B7852E6df6b";
+  const CONTRACT_ADDRESS = "0x34F3a6E3041566f31CB3de4bFbFcC2eCcEe78b08";
 
   useEffect(() => {
     const restoreWeb3 = async () => {
