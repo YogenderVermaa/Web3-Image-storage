@@ -1,74 +1,160 @@
 import axios from "axios";
 import { useWeb3Context } from "../contexts/useWeb3Context";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Mosaic } from "react-loading-indicators";
 import { useImageStore } from "../store/imageStore";
 
+const IMAGE_PER_PAGE = 3;
+
 const GetImage = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const imagePerPage = 3;
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const isFetchingHashesRef = useRef(false);
 
-  const { cachedPages, setCache, totalHashes, setTotalHashes } = useImageStore()
+  const {
+    cachedPages,
+    setCache,
+    totalHashes,
+    ipfsHashes,
+    hashOwner,
+    setHashesForAccount,
+    clearCache,
+  } = useImageStore();
 
   const { web3State } = useWeb3Context();
   const { selectAccount, contractInstance } = web3State;
 
-  const getImageHashes = async () => {
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectAccount]);
+
+  const getImageHashes = useCallback(async () => {
     if (!contractInstance || !selectAccount) return [];
     const ipfsHashes = await contractInstance.viewFiles(selectAccount);
     return Object.values(ipfsHashes);
-  };
+  }, [contractInstance, selectAccount]);
 
   useEffect(() => {
-    const getImage = async () => {
+    let isMounted = true;
+
+    const loadHashes = async () => {
       try {
-        if (cachedPages[currentPage]) {
-          console.log("loading from cache....");
+        if (!selectAccount || !contractInstance) return;
+
+        if (hashOwner === selectAccount && ipfsHashes.length > 0) {
           return;
         }
+
+        if (isFetchingHashesRef.current) {
+          return;
+        }
+
+        isFetchingHashesRef.current = true;
         setLoading(true);
-        const ipfsHashArray = await getImageHashes();
-        setTotalHashes(ipfsHashArray.length);
-
-        if (ipfsHashArray.length === 0) {
-          setCache(currentPage, []);
-          return;
-        }
-
-        const url = import.meta.env.VITE_BACKEND_URL;
-        const token = localStorage.getItem("token");
-
-        const res = await axios.post(
-          `${url}/api/getImage?page=${currentPage}&limit=${imagePerPage}`,
-          ipfsHashArray,
-          {
-            headers: {
-              "access-token": token,
-            },
-          }
-        );
-
-        setCache(currentPage, res.data.data || []);
+        const hashes = await getImageHashes();
+        if (!isMounted) return;
+        setHashesForAccount(selectAccount, hashes);
       } catch (err) {
-        console.log("Error loading images", err);
-        setCache(currentPage, []);
+        console.log("Error loading image hashes", err);
+        if (isMounted) {
+          clearCache();
+        }
       } finally {
-        setLoading(false);
+        isFetchingHashesRef.current = false;
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    if (contractInstance && selectAccount) getImage();
-  }, [selectAccount, contractInstance, currentPage]);
+    loadHashes();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    selectAccount,
+    contractInstance,
+    hashOwner,
+    ipfsHashes.length,
+    getImageHashes,
+    setHashesForAccount,
+    clearCache,
+  ]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const getImage = async () => {
+      if (!selectAccount || !contractInstance) return;
+      if (hashOwner !== selectAccount) return;
+
+      if (ipfsHashes.length === 0) {
+        return;
+      }
+
+      if (cachedPages[currentPage]) {
+        return;
+      }
+
+      const start = (currentPage - 1) * IMAGE_PER_PAGE;
+      const selectedHashes = ipfsHashes.slice(start, start + IMAGE_PER_PAGE);
+
+      if (selectedHashes.length === 0) {
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const url = import.meta.env.VITE_BACKEND_URL;
+        const token = localStorage.getItem("token");
+
+        const res = await axios.post(`${url}/api/getImage`, selectedHashes, {
+          signal: controller.signal,
+          headers: {
+            "access-token": token,
+          },
+        });
+
+        if (!isMounted) return;
+        setCache(currentPage, res.data.data || []);
+      } catch (err) {
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+          return;
+        }
+        console.log("Error loading images", err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    getImage();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [
+    selectAccount,
+    contractInstance,
+    hashOwner,
+    ipfsHashes,
+    currentPage,
+    cachedPages,
+    setCache,
+  ]);
 
   const pagination = (pageNumber) => {
     if (pageNumber < 1) return;
     setCurrentPage(pageNumber);
   };
 
-  const isLastPage = currentPage * imagePerPage >= totalHashes;
-  const images = cachedPages[currentPage] || []
+  const isLastPage = currentPage * IMAGE_PER_PAGE >= totalHashes;
+  const images = cachedPages[currentPage] || [];
 
   const downloadImage = () => {
     const link = document.createElement("a");
@@ -102,10 +188,10 @@ const GetImage = () => {
                 />
               </div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <div className="w-full flex justify-between items-center">
                   <span className="text-white text-sm font-medium">
-                    Image #{(currentPage - 1) * imagePerPage + index + 1}
+                    Image #{(currentPage - 1) * IMAGE_PER_PAGE + index + 1}
                   </span>
                   <div className="px-3 py-1.5 bg-white/90 rounded-lg text-slate-900 text-xs font-semibold">
                     View
@@ -159,7 +245,7 @@ const GetImage = () => {
 
       {previewImage && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-md flex justify-center items-center z-[999] animate-fadeIn"
+          className="fixed inset-0 bg-black/90 backdrop-blur-md flex justify-center items-center z-999 animate-fadeIn"
           onClick={() => setPreviewImage(null)}
         >
           <div
@@ -181,7 +267,7 @@ const GetImage = () => {
 
             <button
               onClick={downloadImage}
-              className="absolute -top-4 left-0 w-12 h-12 bg-gradient-to-br from-indigo-600 to-indigo-700 
+              className="absolute -top-4 left-0 w-12 h-12 bg-linear-to-br from-indigo-600 to-indigo-700 
               hover:from-indigo-500 hover:to-indigo-600 border border-indigo-400/50 
               text-white rounded-full flex justify-center items-center 
               shadow-xl shadow-indigo-500/30 transition-all duration-300 hover:scale-110 

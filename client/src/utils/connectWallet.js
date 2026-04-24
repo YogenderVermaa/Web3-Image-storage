@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import contractAbi from "../constants/contractAbi.json";
+import CONTRACT_ADDRESS from "../constants/contractAddress";
 import axios from "axios";
 
 export const connectWallet = async () => {
@@ -34,9 +35,8 @@ export const connectWallet = async () => {
     localStorage.setItem("selectedAccount", selectAccount);
 
     // Create contract instance
-    const contractAddress = "0xf4A304c64D615b9470C291bd797A7B7852E6df6b";
     const contractInstance = new ethers.Contract(
-      contractAddress,
+      CONTRACT_ADDRESS,
       contractAbi,
       signer
     );

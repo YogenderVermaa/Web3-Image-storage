@@ -22,7 +22,7 @@ export const routes = createBrowserRouter([
     children: [
       { path: "/home", element: <ProtectedRoute><HowWeWork/></ProtectedRoute> },
       { path: "/upload-image", element: <ProtectedRoute><Upload /></ProtectedRoute> },
-      {path:"/work" , element:<ProtectedRoute><Home/></ProtectedRoute>}
+      {path:"/gallery" , element:<ProtectedRoute><Home/></ProtectedRoute>}
     ],
   },
 

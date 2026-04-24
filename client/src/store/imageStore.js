@@ -2,6 +2,8 @@ import {create} from "zustand";
 
 export const useImageStore = create((set) =>({
     cachedPages:{},
+    ipfsHashes: [],
+    hashOwner: null,
     totalHashes:0,
 
 
@@ -12,5 +14,13 @@ export const useImageStore = create((set) =>({
 
     setTotalHashes: (count) => set({totalHashes:count}),
 
-    clearCache:() => set({cachedPages:{},totalHashes:0}),
+    setHashesForAccount: (owner, hashes) =>
+        set({
+            hashOwner: owner,
+            ipfsHashes: hashes,
+            totalHashes: hashes.length,
+            cachedPages: {},
+        }),
+
+    clearCache:() => set({cachedPages:{}, ipfsHashes: [], hashOwner: null, totalHashes:0}),
 }));

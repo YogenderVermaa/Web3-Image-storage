@@ -32,7 +32,7 @@ export default function UploadImage() {
 
     clearCache()
 
-    navigate("/home", { replace: true });
+    navigate("/gallery", { replace: true });
   };
 
   const handleImageUpload = async () => {

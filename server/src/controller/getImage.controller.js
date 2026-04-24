@@ -33,10 +33,11 @@ const getImage = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Body must contain array of hashes");
         }
 
-        const start = (page - 1) * limit;
-        const end = Math.min(hashes.length, page * limit);
-
-        const selectedHashes = hashes.slice(start, end);
+        // Accept either a full hash list with pagination query params
+        // or a pre-sliced hash list sent directly by the client.
+        const selectedHashes = req.query.page || req.query.limit
+            ? hashes.slice((page - 1) * limit, Math.min(hashes.length, page * limit))
+            : hashes;
 
         const encryptedJsonArray = await Promise.all(
             selectedHashes.map((hash) => returnIpfsResponse(hash))

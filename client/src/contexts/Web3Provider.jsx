@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import { ethers } from "ethers";
 import contractAbi from "../constants/contractAbi.json";
+import CONTRACT_ADDRESS from "../constants/contractAddress";
 
 export const web3Context = createContext();
 
@@ -12,8 +13,6 @@ const Web3Provider = ({ children }) => {
     provider: null,
     signer: null,
   });
-
-  const CONTRACT_ADDRESS = "0x34F3a6E3041566f31CB3de4bFbFcC2eCcEe78b08";
 
   useEffect(() => {
     const restoreWeb3 = async () => {
