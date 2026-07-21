@@ -14,7 +14,7 @@ const Wallet = () => {
   const [noMetaMask, setNoMetaMask] = useState(false);
 
   useEffect(() => {
-    if (web3State.selectAccount) {
+    if (selectAccount) {
       navigateTo("/home");
     }
   }, [selectAccount, navigateTo]);
@@ -26,7 +26,6 @@ const Wallet = () => {
         setTimeout(() => {
           window.open("https://metamask.io/download/", "_blank");
         }, 2200);
-
         return;
       }
 
@@ -41,163 +40,101 @@ const Wallet = () => {
     }
   };
 
-  // MetaMask not found screen
   if (noMetaMask) {
     return (
-      <div className="w-full h-screen flex flex-col justify-center items-center bg-slate-950">
-        <div className="flex flex-col items-center">
-          <Lottie animationData={foxAnimation} loop={true} style={{ width: 200 }} />
-          <p className="text-white text-xl mt-6 font-semibold">
-            MetaMask not found
-          </p>
-          <p className="text-slate-400 text-sm mt-2">Redirecting to download page...</p>
+      <div className="flex min-h-screen w-full items-center justify-center bg-zinc-950 px-4">
+        <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center shadow-2xl">
+          <Lottie animationData={foxAnimation} loop={true} style={{ width: 190, margin: "0 auto" }} />
+          <h1 className="mt-6 text-2xl font-semibold text-white">MetaMask not found</h1>
+          <p className="mt-2 text-sm text-zinc-400">Redirecting to download page...</p>
         </div>
       </div>
     );
   }
 
-  // Connecting wallet screen
   if (loading) {
     return (
-      <div className="w-full h-screen flex flex-col justify-center items-center bg-slate-950">
-        <div className="flex flex-col items-center">
-          <Lottie animationData={foxAnimation} loop={true} style={{ width: 200 }} />
-          <p className="text-white text-xl mt-6 font-semibold">
-            Connecting wallet...
-          </p>
-          <div className="flex gap-2 mt-4">
-            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
+      <div className="flex min-h-screen w-full items-center justify-center bg-zinc-950 px-4">
+        <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center shadow-2xl">
+          <Lottie animationData={foxAnimation} loop={true} style={{ width: 190, margin: "0 auto" }} />
+          <h1 className="mt-6 text-2xl font-semibold text-white">Connecting wallet...</h1>
+          <p className="mt-2 text-sm text-zinc-400">Confirm the request in MetaMask to continue.</p>
+          <div className="mt-5 flex justify-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-zinc-500 animate-bounce"></div>
+            <div className="h-2 w-2 rounded-full bg-zinc-500 animate-bounce [animation-delay:120ms]"></div>
+            <div className="h-2 w-2 rounded-full bg-zinc-500 animate-bounce [animation-delay:240ms]"></div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Main wallet connection screen
   return (
-    <div className="w-full min-h-screen bg-slate-950 relative overflow-hidden">
-
-      {/* Subtle Grid Background */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }}></div>
-      </div>
-
-      {/* Subtle Glow Effects */}
-      <div className="absolute w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl top-20 left-20"></div>
-      <div className="absolute w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl bottom-20 right-20"></div>
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-12">
-
-        {/* Logo */}
-        <div className="relative mb-12">
-          {/* Glow effect backdrop */}
-          <div className="absolute -inset-2 bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-all duration-300 animate-pulse"></div>
-
-          <div className="relative w-24 h-24 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl transform group-hover:scale-105 transition-transform duration-300">
-            <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20 rounded-2xl"></div>
-
-            
-            <svg
-              className="w-12 h-12 text-white relative z-10 drop-shadow-lg"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-
-            <div className="absolute top-2 right-2 w-5 h-5 bg-white/40 rounded-full blur-sm"></div>
-          </div>
-        </div>
-
-
-        <div className="absolute inset-0 pointer-events-none select-none">
-          <div className="absolute top-[-100px] -left-20 w-[450px] h-[450px] bg-[#2cf4ff92] opacity-20 blur-[160px] rounded-full animate-pulse" />
-          <div className="absolute bottom-[-100px] right-[-50px] w-[500px] h-[500px] bg-[#2835efc4] opacity-20 blur-[160px] rounded-full animate-pulse [animation-delay:1.3s]" />
-        </div>
-        {/* Title */}
-        <div className="text-center mb-12 max-w-2xl">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-            IMAGE VAULT
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Secure decentralized storage for your images
-          </p>
-        </div>
-
-        {/* Connect Button */}
-        <button
-          onClick={handleWalletConnection}
-          className="group mb-16 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 flex items-center gap-3"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          <span>Connect Wallet</span>
-          <svg
-            className="w-5 h-5 group-hover:translate-x-1 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </button>
-
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl mb-12">
-          {[
-            { icon: "🔐", title: "Encrypted", desc: "End-to-end encryption" },
-            { icon: "⚡", title: "Fast", desc: "IPFS storage" },
-            { icon: "🌐", title: "Decentralized", desc: "Blockchain powered" },
-            { icon: "🛡️", title: "Private", desc: "You own your keys" }
-          ].map((feature, idx) => (
-            <div
-              key={idx}
-              className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-all"
-            >
-              <div className="text-3xl mb-3">{feature.icon}</div>
-              <h3 className="text-white font-semibold text-sm mb-1">{feature.title}</h3>
-              <p className="text-slate-500 text-xs">{feature.desc}</p>
+    <div className="min-h-screen w-full bg-zinc-950 px-4 py-10 text-white">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center">
+        <div className="grid w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="flex flex-col justify-center p-8 sm:p-10 lg:p-14">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-950">
+              <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
             </div>
-          ))}
-        </div>
 
-        {/* Footer */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 text-slate-500 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            <span>Powered by Ethereum & IPFS</span>
-          </div>
-          <div className="hidden sm:block w-1 h-1 bg-slate-700 rounded-full"></div>
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <span>Requires MetaMask extension</span>
-          </div>
+            <p className="mt-8 text-sm font-semibold uppercase tracking-[0.22em] text-zinc-500">ImageVault</p>
+            <h1 className="mt-3 max-w-xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              Secure image storage for wallet owners.
+            </h1>
+            <p className="mt-5 max-w-xl text-base leading-7 text-zinc-400">
+              Store encrypted images on IPFS, keep access tied to your wallet, and retrieve your gallery whenever you connect.
+            </p>
+
+            <button
+              onClick={handleWalletConnection}
+              className="mt-8 inline-flex w-fit items-center gap-3 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-zinc-950 transition-colors hover:bg-zinc-200"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Connect Wallet
+            </button>
+          </section>
+
+          <section className="border-t border-zinc-800 bg-zinc-950/70 p-8 sm:p-10 lg:border-l lg:border-t-0">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+              <div className="text-sm font-semibold text-white">Storage flow</div>
+              <div className="mt-5 space-y-4">
+                {[
+                  ["1", "Connect wallet", "Authenticate with MetaMask."],
+                  ["2", "Encrypt upload", "Image data is protected before storage."],
+                  ["3", "Save IPFS record", "The CID is recorded for your account."],
+                  ["4", "Open gallery", "View images owned by the wallet."],
+                ].map(([number, title, desc]) => (
+                  <div key={title} className="flex gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-xs font-semibold text-zinc-300">
+                      {number}
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-white">{title}</div>
+                      <div className="mt-0.5 text-sm text-zinc-500">{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+                <div className="text-xl font-semibold">AES-256</div>
+                <div className="mt-1 text-xs text-zinc-500">Encryption</div>
+              </div>
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+                <div className="text-xl font-semibold">IPFS</div>
+                <div className="mt-1 text-xs text-zinc-500">Storage</div>
+              </div>
+            </div>
+
+            <p className="mt-5 text-sm text-zinc-500">Requires MetaMask extension.</p>
+          </section>
         </div>
       </div>
     </div>

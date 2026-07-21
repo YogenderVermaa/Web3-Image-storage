@@ -1,6 +1,6 @@
-import { web3Context } from "./Web3Provider";
+import { Web3Context } from "./web3Context";
 import { useContext } from "react";
 
 export const useWeb3Context = () => {
-    return useContext(web3Context)
+    return useContext(Web3Context)
 }

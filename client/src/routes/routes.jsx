@@ -1,34 +1,38 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
-import Wallet from "../pages/Wallet.jsx";
-import Home from "../pages/Home.jsx";
 import ProtectedRoute from "./protectedRoute.jsx";
-import Upload from "../pages/Upload.jsx";
 import Layout from "../Layout.jsx";
 import LayoutWithoutHeader from "../LayoutN.jsx";
-import HowWeWork from "../pages/Work.jsx";
+import PageLoader from "../components/PageLoader.jsx";
+
+const Wallet = lazy(() => import("../pages/Wallet.jsx"));
+const Home = lazy(() => import("../pages/Home.jsx"));
+const Upload = lazy(() => import("../pages/Upload.jsx"));
+const HowWeWork = lazy(() => import("../pages/Work.jsx"));
+
+const withSuspense = (element) => (
+  <Suspense fallback={<PageLoader />}>{element}</Suspense>
+);
 
 export const routes = createBrowserRouter([
-  // Public routes (no header)
   {
     element: <LayoutWithoutHeader />,
-    children: [
-      { path: "/", element: <Wallet /> }, // Login page
-    ],
+    children: [{ path: "/", element: withSuspense(<Wallet />) }],
   },
-
-  // Private routes (with header)
   {
     element: <Layout />,
     children: [
-      { path: "/home", element: <ProtectedRoute><HowWeWork/></ProtectedRoute> },
-      { path: "/upload-image", element: <ProtectedRoute><Upload /></ProtectedRoute> },
-      {path:"/gallery" , element:<ProtectedRoute><Home/></ProtectedRoute>}
+      { path: "/home", element: <ProtectedRoute>{withSuspense(<HowWeWork />)}</ProtectedRoute> },
+      { path: "/upload-image", element: <ProtectedRoute>{withSuspense(<Upload />)}</ProtectedRoute> },
+      { path: "/gallery", element: <ProtectedRoute>{withSuspense(<Home />)}</ProtectedRoute> },
     ],
   },
-
-  // Catch all 404
   {
     path: "*",
-    element: <LayoutWithoutHeader><h1>404 Not Found</h1></LayoutWithoutHeader>
-  }
+    element: (
+      <LayoutWithoutHeader>
+        <h1>404 Not Found</h1>
+      </LayoutWithoutHeader>
+    ),
+  },
 ]);

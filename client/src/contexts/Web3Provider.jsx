@@ -1,9 +1,7 @@
-import { createContext, useState, useEffect } from "react";
-import { ethers } from "ethers";
+import { useState, useEffect } from "react";
 import contractAbi from "../constants/contractAbi.json";
 import CONTRACT_ADDRESS from "../constants/contractAddress";
-
-export const web3Context = createContext();
+import { Web3Context } from "./web3Context";
 
 const Web3Provider = ({ children }) => {
   const [initializing, setInitializing] = useState(true);
@@ -29,6 +27,7 @@ const Web3Provider = ({ children }) => {
           throw new Error("MetaMask not found");
         }
 
+        const { ethers } = await import("ethers");
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contractInstance = new ethers.Contract(
@@ -61,9 +60,9 @@ const Web3Provider = ({ children }) => {
   };
 
   return (
-    <web3Context.Provider value={{ web3State, setWeb3State, updateWeb3State, initializing }}>
+    <Web3Context.Provider value={{ web3State, setWeb3State, updateWeb3State, initializing }}>
       {children}
-    </web3Context.Provider>
+    </Web3Context.Provider>
   );
 };
 

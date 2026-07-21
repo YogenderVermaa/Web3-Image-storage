@@ -1,14 +1,28 @@
 import axios from "axios";
 import { useWeb3Context } from "../contexts/useWeb3Context";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Mosaic } from "react-loading-indicators";
 import { useImageStore } from "../store/imageStore";
 
 const IMAGE_PER_PAGE = 3;
 
+const getImageMimeType = (base64) => {
+  if (base64.startsWith("/9j/")) return "image/jpeg";
+  if (base64.startsWith("iVBORw0KGgo")) return "image/png";
+  if (base64.startsWith("R0lGOD")) return "image/gif";
+  if (base64.startsWith("UklGR")) return "image/webp";
+  return "image/png";
+};
+
+const getImageSrc = (imgData) => {
+  if (!imgData) return "";
+  if (imgData.startsWith("data:image/")) return imgData;
+  return `data:${getImageMimeType(imgData)};base64,${imgData}`;
+};
+
 const GetImage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
   const isFetchingHashesRef = useRef(false);
 
@@ -32,7 +46,7 @@ const GetImage = () => {
   const getImageHashes = useCallback(async () => {
     if (!contractInstance || !selectAccount) return [];
     const ipfsHashes = await contractInstance.viewFiles(selectAccount);
-    return Object.values(ipfsHashes);
+    return Object.values(ipfsHashes).filter(Boolean).map(String);
   }, [contractInstance, selectAccount]);
 
   useEffect(() => {
@@ -41,30 +55,22 @@ const GetImage = () => {
     const loadHashes = async () => {
       try {
         if (!selectAccount || !contractInstance) return;
-
-        if (hashOwner === selectAccount && ipfsHashes.length > 0) {
-          return;
-        }
-
-        if (isFetchingHashesRef.current) {
-          return;
-        }
+        if (hashOwner === selectAccount && ipfsHashes.length > 0) return;
+        if (isFetchingHashesRef.current) return;
 
         isFetchingHashesRef.current = true;
+        setErrorMessage("");
         setLoading(true);
         const hashes = await getImageHashes();
         if (!isMounted) return;
         setHashesForAccount(selectAccount, hashes);
       } catch (err) {
         console.log("Error loading image hashes", err);
-        if (isMounted) {
-          clearCache();
-        }
+        setErrorMessage("Could not load image records from the contract.");
+        if (isMounted) clearCache();
       } finally {
         isFetchingHashesRef.current = false;
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -90,26 +96,26 @@ const GetImage = () => {
     const getImage = async () => {
       if (!selectAccount || !contractInstance) return;
       if (hashOwner !== selectAccount) return;
-
-      if (ipfsHashes.length === 0) {
-        return;
-      }
-
-      if (cachedPages[currentPage]) {
-        return;
-      }
+      if (ipfsHashes.length === 0) return;
+      if (cachedPages[currentPage]) return;
 
       const start = (currentPage - 1) * IMAGE_PER_PAGE;
       const selectedHashes = ipfsHashes.slice(start, start + IMAGE_PER_PAGE);
-
-      if (selectedHashes.length === 0) {
-        return;
-      }
+      if (selectedHashes.length === 0) return;
 
       try {
         setLoading(true);
+        setErrorMessage("");
         const url = import.meta.env.VITE_BACKEND_URL;
         const token = localStorage.getItem("token");
+
+        if (!url) {
+          throw new Error("Missing VITE_BACKEND_URL");
+        }
+
+        if (!token) {
+          throw new Error("Missing auth token");
+        }
 
         const res = await axios.post(`${url}/api/getImage`, selectedHashes, {
           signal: controller.signal,
@@ -121,14 +127,13 @@ const GetImage = () => {
         if (!isMounted) return;
         setCache(currentPage, res.data.data || []);
       } catch (err) {
-        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
-          return;
-        }
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
         console.log("Error loading images", err);
-      } finally {
         if (isMounted) {
-          setLoading(false);
+          setErrorMessage("Could not load images from the server. Check backend URL, auth token, and server logs.");
         }
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -163,80 +168,74 @@ const GetImage = () => {
     link.click();
   };
 
+  if (loading) {
+    return (
+      <div className="flex min-h-[360px] w-full items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
+        <div className="text-sm font-medium text-zinc-400">Loading images...</div>
+      </div>
+    );
+  }
 
-
-  return loading ? (
-    <div className="relative w-full min-h-screen bg-slate-950 flex justify-center items-center">
-      <Mosaic color="#6366f1" size="medium" text="" textColor="" />
-    </div>
-  ) : (
-    <div className="w-full min-h-screen bg-slate-950 flex flex-col justify-center items-center py-16">
+  return (
+    <div className="w-full">
+      {errorMessage && (
+        <div className="mb-4 rounded-lg border border-zinc-700 bg-zinc-900 p-4 text-sm text-zinc-300">
+          {errorMessage}
+        </div>
+      )}
 
       {images.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-7xl px-6">
-          {images.map((imgData, index) => (
-            <div
-              key={index}
-              onClick={() => setPreviewImage(`data:image/*;base64,${imgData}`)}
-              className="group cursor-pointer relative rounded-xl overflow-hidden bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-indigo-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/20"
-            >
-              <div className="aspect-square overflow-hidden bg-slate-900">
-                <img
-                  src={`data:image/*;base64,${imgData}`}
-                  alt={`Image ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-
-              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <div className="w-full flex justify-between items-center">
-                  <span className="text-white text-sm font-medium">
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {images.map((imgData, index) => {
+            const src = getImageSrc(imgData);
+            return (
+              <button
+                key={index}
+                onClick={() => setPreviewImage(src)}
+                className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 text-left shadow-2xl shadow-black/20 hover:border-zinc-600"
+              >
+                <div className="aspect-square bg-zinc-950">
+                  <img src={src} alt={`Image ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="text-sm font-medium text-zinc-100">
                     Image #{(currentPage - 1) * IMAGE_PER_PAGE + index + 1}
                   </span>
-                  <div className="px-3 py-1.5 bg-white/90 rounded-lg text-slate-900 text-xs font-semibold">
-                    View
-                  </div>
+                  <span className="text-xs font-medium text-zinc-500">View</span>
                 </div>
-              </div>
-            </div>
-          ))}
+              </button>
+            );
+          })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-20 h-20 bg-slate-900 rounded-2xl flex items-center justify-center border border-slate-800 mb-4">
-            <svg className="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-950">
+            <svg className="h-6 w-6 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M4 16l4-4a2 2 0 012.8 0l1.2 1.2L15 10a2 2 0 012.8 0L20 12.2M4 6h16v14H4z" />
             </svg>
           </div>
-          <p className="text-slate-400 text-lg">No images found</p>
-
+          <p className="mt-4 text-sm font-medium text-zinc-400">No images found</p>
         </div>
       )}
 
       {images.length > 0 && (
-        <div className="flex gap-3 mt-12">
+        <div className="mt-6 flex items-center justify-center gap-3">
           <button
             onClick={() => pagination(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-6 py-2.5 rounded-lg font-medium transition-all ${currentPage === 1
-              ? "bg-slate-800 text-slate-600 cursor-not-allowed"
-              : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
-              }`}
+            className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600"
           >
             Previous
           </button>
 
-          <div className="flex items-center px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 text-sm font-medium">
+          <div className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-400">
             Page {currentPage}
           </div>
 
           <button
             onClick={() => pagination(currentPage + 1)}
             disabled={isLastPage}
-            className={`px-6 py-2.5 rounded-lg font-medium transition-all ${isLastPage
-              ? "bg-slate-800 text-slate-600 cursor-not-allowed"
-              : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
-              }`}
+            className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600"
           >
             Next
           </button>
@@ -245,64 +244,33 @@ const GetImage = () => {
 
       {previewImage && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-md flex justify-center items-center z-999 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
           onClick={() => setPreviewImage(null)}
         >
-          <div
-            className="relative max-w-[90%] max-h-[90%]"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
             <img
               src={previewImage}
               alt="Preview"
-              className="rounded-xl shadow-2xl max-h-[90vh] max-w-[90vw] object-contain border border-slate-800"
+              className="max-h-[90vh] max-w-[90vw] rounded-lg bg-zinc-950 object-contain"
             />
 
-            <button
-              onClick={() => setPreviewImage(null)}
-              className="absolute -top-4 -right-4 w-12 h-12 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white rounded-full flex justify-center items-center text-xl font-bold shadow-xl transition-all hover:scale-110"
-            >
-              ✕
-            </button>
-
-            <button
-              onClick={downloadImage}
-              className="absolute -top-4 left-0 w-12 h-12 bg-linear-to-br from-indigo-600 to-indigo-700 
-              hover:from-indigo-500 hover:to-indigo-600 border border-indigo-400/50 
-              text-white rounded-full flex justify-center items-center 
-              shadow-xl shadow-indigo-500/30 transition-all duration-300 hover:scale-110 
-              hover:shadow-2xl hover:shadow-indigo-500/50 group"
-              title="Download Image"
-            >
-              <svg
-                className="w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={2.5}
+            <div className="absolute right-0 top-0 flex translate-y-[-120%] gap-2">
+              <button
+                onClick={downloadImage}
+                className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-zinc-950 shadow-sm hover:bg-zinc-200"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-            </button>
-
+                Download
+              </button>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-zinc-950 shadow-sm hover:bg-zinc-200"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

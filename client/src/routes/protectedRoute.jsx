@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children }) {
   if (initializing) return null;
 
   // Check React Context + local storage
-  const stored = localStorage.getItem("selectAccount");
+  const stored = localStorage.getItem("selectedAccount");
 
   if (!selectAccount && !stored) {
     return <Navigate to="/" replace />;
